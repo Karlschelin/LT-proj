@@ -1,0 +1,9 @@
+{
+  "name": "Prata – språkträning",
+  "short_name": "Prata",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f6f4ef",
+  "theme_color": "#2f6b5b",
+  "lang": "sv"
+}
