@@ -9,7 +9,10 @@ import { TurnSchema, type ChatRequest } from "@/lib/schema";
 export const runtime = "nodejs";
 export const maxDuration = 60;
 
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-fable-5-2";
+// The in-app conversation partner uses a cheaper model. Override with ANTHROPIC_MODEL.
+const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
+// Server-side refusal fallbacks are not available on Haiku models.
+const SUPPORTS_FALLBACK = !MODEL.includes("haiku");
 
 export async function POST(req: Request) {
   const body = (await req.json()) as ChatRequest;
@@ -38,8 +41,9 @@ export async function POST(req: Request) {
     const response = await client.beta.messages.parse({
       model: MODEL,
       max_tokens: 16000,
-      betas: ["server-side-fallback-2026-07-01"],
-      fallbacks: "default",
+      ...(SUPPORTS_FALLBACK
+        ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }
+        : {}),
       system: buildSystemPrompt(lang, level, scenario),
       messages,
       output_config: { effort: "low", format: betaZodOutputFormat(TurnSchema) },

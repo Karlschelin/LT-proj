@@ -17,7 +17,8 @@ och förklaringar på svenska.
 2. Lägg till miljövariabeln `ANTHROPIC_API_KEY` (från console.anthropic.com).
 3. Deploy. Öppna länken i mobilen → "Lägg till på hemskärmen".
 
-Modell: `claude-fable-5-2` som standard (ändra med `ANTHROPIC_MODEL`).
+Samtalspartnern använder `claude-sonnet-5-5` som standard (ändra med `ANTHROPIC_MODEL`,
+t.ex. `claude-haiku-5-5` för lägsta kostnad).
 
 ## Lokalt
 ```
@@ -27,6 +28,6 @@ npm run dev
 ```
 
 ## Nästa steg
-- Steg 2: naturlig röst (ElevenLabs/OpenAI TTS) + bättre taligenkänning
+- Steg 2: naturlig röst (OpenAI TTS, ev. ElevenLabs senare) + bättre taligenkänning
 - Steg 3: uttalsbedömning per ord/ljud (Azure Pronunciation Assessment)
 - Steg 4: framsteg, vanligaste fel, repetition
