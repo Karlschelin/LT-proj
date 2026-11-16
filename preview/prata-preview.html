@@ -1,0 +1,318 @@
+<title>Prata</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<style>
+/* Layout: same mobile-first app as the real Prata (home screen → chat), one screen at a time */
+:root {
+  --bg: #f6f4ef; --surface: #ffffff; --surface-2: #efece4; --text: #1c1b1f; --muted: #6b6870;
+  --border: #e3dfd5; --accent: #2f6b5b; --accent-soft: #dcebe5; --accent-text: #ffffff;
+  --user: #2f6b5b; --user-text: #ffffff; --ok: #2e7d4f; --ok-soft: #e1f2e7; --warn: #a8670b;
+  --warn-soft: #fbefd9; --err: #b3402f; --err-soft: #f9e2dd;
+  --shadow: 0 1px 2px rgba(0,0,0,.05), 0 4px 16px rgba(0,0,0,.04);
+  --radius: 18px;
+  --font: ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #16151a; --surface: #211f26; --surface-2: #2a2830; --text: #f1eff4; --muted: #a19ead;
+  --border: #35323c; --accent: #6cc4a8; --accent-soft: #1f3a33; --accent-text: #0f1f1a;
+  --user: #3b7f6c; --user-text: #ffffff; --ok: #74d39a; --ok-soft: #1c3427; --warn: #f0b75a;
+  --warn-soft: #3a2e17; --err: #f08a78; --err-soft: #3d221d; --shadow: none; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #16151a; --surface: #211f26; --surface-2: #2a2830; --text: #f1eff4; --muted: #a19ead;
+  --border: #35323c; --accent: #6cc4a8; --accent-soft: #1f3a33; --accent-text: #0f1f1a;
+  --user: #3b7f6c; --user-text: #ffffff; --ok: #74d39a; --ok-soft: #1c3427; --warn: #f0b75a;
+  --warn-soft: #3a2e17; --err: #f08a78; --err-soft: #3d221d; --shadow: none; color-scheme: dark; }
+
+* { box-sizing: border-box; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--text); font-family: var(--font); font-size: 16px; line-height: 1.45;
+  -webkit-font-smoothing: antialiased; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; cursor: pointer; }
+button:focus-visible, textarea:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Home */
+.home { max-width: 640px; margin: 0 auto; padding-block: 20px 40px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.brand { display: flex; align-items: center; gap: 10px; margin: 8px 0 4px; }
+.brand-logo { width: 36px; height: 36px; border-radius: 11px; background: var(--accent); color: var(--accent-text); display: grid; place-items: center; font-weight: 700; font-size: 18px; }
+.brand h1 { font-size: 26px; margin: 0; letter-spacing: -.02em; }
+.lead { color: var(--muted); margin: 0 0 8px; }
+.section-title { font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); margin: 22px 0 10px; }
+.chips { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none; }
+.chips::-webkit-scrollbar { display: none; }
+.chip { flex: none; border: 1px solid var(--border); background: var(--surface); border-radius: 999px; padding: 8px 14px; white-space: nowrap; display: flex; align-items: center; gap: 6px; }
+.chip[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: var(--accent-text); }
+.chip small { opacity: .75; font-size: 12px; }
+.level-hint { color: var(--muted); font-size: 14px; margin: 8px 0 0; }
+.scenarios { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.scenario { text-align: left; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px; box-shadow: var(--shadow); display: flex; flex-direction: column; gap: 4px; min-height: 120px; transition: transform .1s; }
+.scenario:active { transform: scale(.98); }
+.scenario-emoji { font-size: 28px; }
+.scenario-title { font-weight: 600; }
+.scenario-sub { color: var(--muted); font-size: 13px; }
+.preview-note { margin-top: 18px; padding: 10px 12px; border-radius: 12px; background: var(--warn-soft); color: var(--warn); font-size: 13px; }
+
+/* Practice */
+.practice { display: flex; flex-direction: column; height: 100%; max-width: 720px; margin: 0 auto; }
+.topbar { display: flex; align-items: center; gap: 10px; padding-block: 10px; border-bottom: 1px solid var(--border); background: var(--bg);
+  padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); }
+.icon-btn { width: 40px; height: 40px; border-radius: 12px; border: none; background: transparent; display: grid; place-items: center; font-size: 20px; flex: none; }
+.icon-btn:hover { background: var(--surface-2); }
+.icon-btn[aria-pressed="true"] { background: var(--accent-soft); }
+.topbar-title { flex: 1; min-width: 0; }
+.topbar-title strong { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.topbar-title span { color: var(--muted); font-size: 13px; }
+.inset { padding-left: max(12px, env(safe-area-inset-left, 0px)); padding-right: max(12px, env(safe-area-inset-right, 0px)); }
+.goal { margin-top: 10px; padding: 10px 12px; border-radius: 14px; background: var(--accent-soft); font-size: 14px; display: flex; gap: 8px; }
+.demo-banner { margin-top: 10px; padding: 8px 12px; border-radius: 12px; background: var(--warn-soft); color: var(--warn); font-size: 13px; }
+.thread { flex: 1; overflow-y: auto; padding-block: 14px 8px; display: flex; flex-direction: column; gap: 12px; }
+.row { display: flex; flex-direction: column; gap: 6px; max-width: 88%; min-width: 0; }
+.row.partner { align-self: flex-start; }
+.row.user { align-self: flex-end; align-items: flex-end; }
+.bubble { padding: 10px 14px; border-radius: var(--radius); overflow-wrap: anywhere; }
+.partner .bubble { background: var(--surface); border: 1px solid var(--border); border-bottom-left-radius: 6px; box-shadow: var(--shadow); }
+.user .bubble { background: var(--user); color: var(--user-text); border-bottom-right-radius: 6px; }
+.translation { color: var(--muted); font-size: 14px; margin-top: 6px; padding-top: 6px; border-top: 1px dashed var(--border); }
+.bubble-actions { display: flex; gap: 4px; }
+.mini-btn { border: none; background: transparent; color: var(--muted); font-size: 13px; padding: 4px 8px; border-radius: 8px; display: inline-flex; align-items: center; gap: 4px; }
+.mini-btn:hover { background: var(--surface-2); }
+.feedback { width: 100%; min-width: min(260px, 100%); border-radius: 14px; padding: 10px 12px; font-size: 14px; text-align: left; }
+.feedback.perfect { background: var(--ok-soft); } .feedback.minor { background: var(--warn-soft); } .feedback.errors { background: var(--err-soft); }
+.fb-head { all: unset; display: flex; width: 100%; gap: 6px; cursor: pointer; font-weight: 600; }
+.feedback.perfect .fb-head { color: var(--ok); } .feedback.minor .fb-head { color: var(--warn); } .feedback.errors .fb-head { color: var(--err); }
+.fb-head .spacer { flex: 1; } .fb-head .caret { font-size: 12px; opacity: .7; }
+.fb-body { margin-top: 8px; display: flex; flex-direction: column; gap: 8px; }
+.fb-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; }
+.fb-corrected { font-weight: 600; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.err { background: var(--surface); border-radius: 10px; padding: 8px 10px; }
+.err-line { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; }
+.err-old { text-decoration: line-through; color: var(--err); }
+.err-new { color: var(--ok); font-weight: 600; }
+.tag { font-size: 11px; padding: 2px 7px; border-radius: 999px; background: var(--surface-2); color: var(--muted); }
+.err-why { margin-top: 4px; }
+.typing { display: inline-flex; gap: 4px; padding: 14px; }
+.typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); animation: blink 1.2s infinite; }
+.typing i:nth-child(2) { animation-delay: .2s; } .typing i:nth-child(3) { animation-delay: .4s; }
+@keyframes blink { 0%, 80%, 100% { opacity: .25; } 40% { opacity: 1; } }
+.composer { border-top: 1px solid var(--border); background: var(--bg); padding-block: 8px 12px; }
+.suggestions { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-bottom: 8px; }
+.suggestions::-webkit-scrollbar { display: none; }
+.suggestion { flex: none; max-width: 240px; text-align: left; border: 1px solid var(--border); background: var(--surface); border-radius: 12px; padding: 6px 10px; font-size: 13px; }
+.suggestion span { display: block; color: var(--muted); font-size: 12px; }
+.input-row { display: flex; align-items: flex-end; gap: 8px; }
+.input-row textarea { flex: 1; min-width: 0; resize: none; border: 1px solid var(--border); background: var(--surface); color: var(--text); border-radius: 22px; padding: 10px 14px; font: inherit; max-height: 120px; min-height: 44px; outline: none; }
+.input-row textarea:focus { border-color: var(--accent); }
+.round-btn { width: 44px; height: 44px; flex: none; border-radius: 50%; border: none; display: grid; place-items: center; font-size: 18px; background: var(--surface-2); }
+.round-btn.send { background: var(--accent); color: var(--accent-text); }
+.round-btn:disabled { opacity: .4; cursor: default; }
+.toast { position: fixed; left: 50%; transform: translateX(-50%); bottom: calc(90px + env(safe-area-inset-bottom, 0px)); background: var(--text); color: var(--bg); padding: 8px 14px; border-radius: 10px; font-size: 14px; max-width: calc(100% - 32px); }
+@media (prefers-reduced-motion: reduce) { .typing i { animation: none; opacity: .6; } .scenario { transition: none; } }
+</style>
+
+<div id="app"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const LANGUAGES = [
+  ["es-ES","Spanska","🇪🇸"],["fr-FR","Franska","🇫🇷"],["it-IT","Italienska","🇮🇹"],["de-DE","Tyska","🇩🇪"],
+  ["en-GB","Engelska","🇬🇧"],["pt-PT","Portugisiska","🇵🇹"],["ja-JP","Japanska","🇯🇵"]];
+const LEVELS = [["A1","Nybörjare","Enkla ord och korta meningar"],["A2","Grundläggande","Vardagliga fraser"],
+  ["B1","Mellan","Klarar de flesta situationer"],["B2","Avancerad","Flytande, nyanserat"],["C1","Expert","Nästan modersmål"]];
+
+// Example script per scenario (Spanish). In the real app every line is generated live.
+const S = (o) => o;
+const SCENARIOS = [
+  S({ id:"restaurant", emoji:"🍝", title:"Restaurang", sub:"Beställ mat, fråga om menyn, betala",
+    goal:"Beställ en förrätt, en huvudrätt och något att dricka – och be om notan.",
+    open:["¡Buenas tardes! Bienvenido. ¿Mesa para uno? Aquí tiene la carta. ¿Le traigo algo de beber mientras mira?","God eftermiddag! Välkommen. Bord för en? Här är menyn. Får jag ta med något att dricka medan du tittar?"],
+    sample:"Yo quiero un mesa para uno",
+    fb:{status:"errors",corrected:"Quiero una mesa para uno, por favor.",natural:"Una mesa para uno, por favor.",
+      errors:[["Yo quiero un mesa","Quiero una mesa","grammatik","\"Mesa\" är femininum på spanska, så det heter \"una mesa\". Man brukar också skippa \"yo\" eftersom verbformen \"quiero\" redan visar vem som pratar."]],
+      tip:"Bra jobbat! På restaurang låter det ännu mer naturligt att bara säga \"Una mesa para uno, por favor.\""},
+    reply:["¡Perfecto! Hoy le recomiendo la paella de marisco, está buenísima. ¿Y para beber, qué le pongo?","Perfekt! Idag rekommenderar jag skaldjurspaellan, den är jättegod. Och vad vill du ha att dricka?"],
+    sugg:[["Un agua con gas, por favor.","Ett mineralvatten, tack."],["¿La paella lleva gluten?","Innehåller paellan gluten?"],["Mejor una cerveza, gracias.","Hellre en öl, tack."]] }),
+  S({ id:"smalltalk", emoji:"☕", title:"Vardagssnack", sub:"Prata om dagen, väder, planer",
+    goal:"Håll igång ett avslappnat samtal i minst 6 repliker.",
+    open:["¡Hombre, qué casualidad! ¿Qué tal el finde? Yo al final no hice nada, con la lluvia que cayó…","Men hej, vilken slump! Hur var helgen? Jag gjorde ingenting till slut, med allt regn som kom…"],
+    sample:"Bien, yo fui a la playa con mis amigos",
+    fb:{status:"perfect",corrected:"",natural:"",errors:[],tip:"Helt rätt! Preteritum \"fui\" passar perfekt för något avslutat i helgen."},
+    reply:["¿A la playa? ¡Qué envidia! ¿Y no hacía frío? Aquí estuvo todo el día gris.","Till stranden? Vad avundsjuk jag är! Var det inte kallt? Här var det grått hela dagen."],
+    sugg:[["No, hacía mucho sol.","Nej, det var jättesoligt."],["Un poco, pero valió la pena.","Lite, men det var värt det."],["¿Y tú qué vas a hacer hoy?","Och vad ska du göra idag?"]] }),
+  S({ id:"hobby", emoji:"🎸", title:"Hobby & intressen", sub:"Berätta om vad du gillar att göra",
+    goal:"Berätta om din hobby och ställ minst två frågor tillbaka.",
+    open:["Oye, Marta me dijo que tocas la guitarra. ¿Desde cuándo? Yo siempre he querido aprender.","Du, Marta sa att du spelar gitarr. Sen när då? Jag har alltid velat lära mig."],
+    sample:"Yo toco la guitarra desde cinco años",
+    fb:{status:"errors",corrected:"Toco la guitarra desde hace cinco años.",natural:"Llevo cinco años tocando la guitarra.",
+      errors:[["desde cinco años","desde hace cinco años","uttryck","För att säga hur länge något har pågått använder spanskan \"desde hace\" + tid. \"Desde\" ensamt används med en tidpunkt, t.ex. \"desde 2020\"."]],
+      tip:"\"Llevar + tid + -ando\" är ett väldigt vanligt sätt att säga hur länge man har hållit på med något."},
+    reply:["¡Cinco años ya! ¿Y qué tipo de música tocas? ¿Más rock o algo tranquilo?","Fem år redan! Och vilken sorts musik spelar du? Mer rock eller något lugnt?"],
+    sugg:[["Sobre todo rock.","Mest rock."],["Música acústica, más tranquila.","Akustisk musik, lugnare."],["¿Y tú tienes algún hobby?","Har du någon hobby?"]] }),
+  S({ id:"tourist", emoji:"🏛️", title:"Turistattraktion", sub:"Biljetter, guidning, öppettider",
+    goal:"Köp biljett, fråga om guidad tur och vad man inte får missa.",
+    open:["¡Hola, buenos días! ¿Cuántas entradas quiere? La general son 15 euros, y hay descuento para estudiantes.","Hej, god morgon! Hur många biljetter vill du ha? Vanlig biljett kostar 15 euro, och det finns studentrabatt."],
+    sample:"Una entrada por favor. Hay visitas guiadas?",
+    fb:{status:"minor",corrected:"Una entrada, por favor. ¿Hay visitas guiadas?",natural:"",
+      errors:[["Hay visitas guiadas?","¿Hay visitas guiadas?","stavning","På spanska börjar frågor med ett upp-och-nervänt frågetecken \"¿\". På mobilen är det lätt att glömma – det är inget stort fel."]],
+      tip:"Annars helt rätt – bra att du använde \"visitas guiadas\"!"},
+    reply:["Sí, claro. Hay una en inglés a las once y otra en español a las doce. Cuesta 5 euros más. ¿Le apunto?","Ja, absolut. Det finns en på engelska klockan elva och en på spanska klockan tolv. Det kostar 5 euro extra. Ska jag skriva upp dig?"],
+    sugg:[["Sí, la de las doce, por favor.","Ja, den klockan tolv, tack."],["¿Cuánto dura la visita?","Hur länge varar visningen?"],["¿Qué no me puedo perder?","Vad får jag inte missa?"]] }),
+  S({ id:"directions", emoji:"🗺️", title:"Hitta vägen", sub:"Fråga om vägen och kollektivtrafik",
+    goal:"Ta reda på hur du kommer till stationen och hur lång tid det tar.",
+    open:["¿Perdona, estás buscando algo? Te veo un poco perdido con el mapa.","Ursäkta, letar du efter något? Du ser lite vilsen ut med kartan."],
+    sample:"Sí, donde está la estación de tren?",
+    fb:{status:"minor",corrected:"Sí, ¿dónde está la estación de tren?",natural:"Sí, ¿me puedes decir cómo llego a la estación de tren?",
+      errors:[["donde","¿dónde","stavning","Frågeordet \"dónde\" har accent när det används i en fråga, och frågan börjar med \"¿\"."]],
+      tip:"Fint! Att fråga \"¿cómo llego a…?\" (hur kommer jag till…) är väldigt användbart."},
+    reply:["Ah, está cerquita. Sigue recto hasta la plaza y luego a la izquierda. Son unos diez minutos andando.","Ah, den ligger nära. Gå rakt fram till torget och sen till vänster. Det tar ungefär tio minuter att gå."],
+    sugg:[["¿Hay un autobús?","Finns det en buss?"],["¿A la izquierda en la plaza?","Till vänster vid torget?"],["¡Muchas gracias!","Tack så mycket!"]] }),
+  S({ id:"hotel", emoji:"🏨", title:"Hotell", sub:"Checka in, klaga, fråga om tips",
+    goal:"Checka in och lös ett problem med rummet.",
+    open:["Buenas noches, bienvenido al Hotel Sol. ¿Tiene una reserva?","God kväll, välkommen till Hotel Sol. Har du en bokning?"],
+    sample:"Sí, tengo una reserva a nombre de Karlsson",
+    fb:{status:"perfect",corrected:"",natural:"",errors:[],tip:"Perfekt! \"A nombre de\" är precis vad man säger i receptionen."},
+    reply:["Perfecto, señor Karlsson. Habitación 304, tercera planta. El desayuno es de siete a diez. ¿Necesita algo más?","Perfekt, herr Karlsson. Rum 304, tredje våningen. Frukosten serveras sju till tio. Behöver du något mer?"],
+    sugg:[["¿Cuál es la contraseña del wifi?","Vad är lösenordet till wifi?"],["¿Hay ascensor?","Finns det hiss?"],["No, gracias.","Nej tack."]] }),
+  S({ id:"shopping", emoji:"🛍️", title:"Shopping", sub:"Storlekar, priser, byta varor",
+    goal:"Hitta en tröja i rätt storlek och fråga om du kan byta den senare.",
+    open:["¡Hola! ¿Te puedo ayudar en algo o solo estás mirando?","Hej! Kan jag hjälpa dig med något eller tittar du bara?"],
+    sample:"Busco un jersey en talla mediano",
+    fb:{status:"minor",corrected:"Busco un jersey en la talla M.",natural:"¿Tenéis este jersey en una M?",
+      errors:[["talla mediano","la talla M","ordval","Storlekar sägs oftast med bokstaven (\"una M\", \"una L\") eller \"talla mediana\" – \"talla\" är femininum."]],
+      tip:"Bra början! \"Busco…\" (jag letar efter…) är perfekt i butik."},
+    reply:["Claro, mira, este azul lo tenemos en M. Los probadores están al fondo a la derecha.","Absolut, titta, den här blå har vi i M. Provrummen ligger längst in till höger."],
+    sugg:[["¿Lo tenéis en negro?","Har ni den i svart?"],["¿Puedo cambiarlo si no me queda bien?","Kan jag byta den om den inte passar?"],["¿Cuánto cuesta?","Vad kostar den?"]] }),
+  S({ id:"friends", emoji:"🎉", title:"Nya vänner", sub:"Presentera dig på en fest",
+    goal:"Presentera dig och bestäm att ses igen.",
+    open:["¡Hola! Creo que no nos conocemos. Soy Lucía, la compañera de piso de Pablo. ¿Y tú?","Hej! Jag tror inte vi har träffats. Jag heter Lucía, jag bor ihop med Pablo. Och du?"],
+    sample:"Hola, me llamo Erik, soy de Suecia",
+    fb:{status:"perfect",corrected:"",natural:"",errors:[],tip:"Helt rätt! Du kan också säga \"Soy Erik\" – det låter lite mer avslappnat."},
+    reply:["¡De Suecia! ¡Qué guay! ¿Y qué te trae por aquí? ¿Estás de vacaciones o vives aquí?","Från Sverige! Vad coolt! Och vad gör du här? Är du på semester eller bor du här?"],
+    sugg:[["Estoy de vacaciones.","Jag är på semester."],["Vivo aquí desde hace un año.","Jag har bott här i ett år."],["Conozco a Pablo del trabajo.","Jag känner Pablo från jobbet."]] }),
+];
+
+const state = { view: "home", lang: "es-ES", level: "A2", scenario: null, messages: [], loading: false, slow: false, allTr: false, step: 0 };
+try { state.lang = localStorage.getItem("lang") || state.lang; state.level = localStorage.getItem("level") || state.level; } catch (e) {}
+
+const app = document.getElementById("app");
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;" }[c]));
+const langOf = (c) => LANGUAGES.find((l) => l[0] === c);
+
+function toast(msg) {
+  const t = document.getElementById("toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast.t); toast.t = setTimeout(() => (t.hidden = true), 2600);
+}
+function speak(text) {
+  try {
+    if (!("speechSynthesis" in window)) return toast("Uppläsning stöds inte här");
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text); u.lang = "es-ES"; u.rate = state.slow ? 0.7 : 0.95;
+    speechSynthesis.speak(u);
+  } catch (e) { toast("Uppläsning stöds inte här"); }
+}
+
+function renderHome() {
+  const lvl = LEVELS.find((l) => l[0] === state.level);
+  app.innerHTML = `
+  <main class="home">
+    <div class="brand"><div class="brand-logo">P</div><h1>Prata</h1></div>
+    <p class="lead">Öva på riktiga situationer. Du får rättelser och förklaringar på svenska efter varje svar.</p>
+    <div class="section-title">Språk</div>
+    <div class="chips">${LANGUAGES.map((l) => `<button class="chip" data-lang="${l[0]}" aria-pressed="${state.lang === l[0]}"><span>${l[2]}</span> ${l[1]}</button>`).join("")}</div>
+    <div class="section-title">Nivå</div>
+    <div class="chips">${LEVELS.map((l) => `<button class="chip" data-level="${l[0]}" aria-pressed="${state.level === l[0]}">${l[0]} <small>${l[1]}</small></button>`).join("")}</div>
+    <p class="level-hint">${lvl ? lvl[2] : ""}</p>
+    <div class="section-title">Välj situation</div>
+    <div class="scenarios">${SCENARIOS.map((s) => `<button class="scenario" data-scenario="${s.id}"><span class="scenario-emoji">${s.emoji}</span><span class="scenario-title">${s.title}</span><span class="scenario-sub">${s.sub}</span></button>`).join("")}</div>
+    <div class="preview-note">Förhandsvisning: samtalen är förskrivna exempel på spanska. I den riktiga appen svarar AI:n live på det språk och den nivå du väljer.</div>
+  </main>`;
+}
+
+function feedbackHTML(fb, i) {
+  const head = { perfect: ["✅","Perfekt!"], minor: ["🟡","Nästan rätt"], errors: ["✏️","Rättelser"] }[fb.status];
+  const open = fb.open !== false;
+  let body = "";
+  if (open) {
+    body += `<div class="fb-body">`;
+    if (fb.status !== "perfect" && fb.corrected) body += `<div><div class="fb-label">Korrekt</div><div class="fb-corrected">${esc(fb.corrected)}<button class="mini-btn" data-say="${esc(fb.corrected)}" aria-label="Lyssna">🔊</button></div></div>`;
+    for (const e of fb.errors) body += `<div class="err"><div class="err-line"><span class="err-old">${esc(e[0])}</span><span>→</span><span class="err-new">${esc(e[1])}</span><span class="tag">${e[2]}</span></div><div class="err-why">${esc(e[3])}</div></div>`;
+    if (fb.natural) body += `<div><div class="fb-label">Mer naturligt</div><div class="fb-corrected">${esc(fb.natural)}<button class="mini-btn" data-say="${esc(fb.natural)}" aria-label="Lyssna">🔊</button></div></div>`;
+    if (fb.tip) body += `<div>💡 ${esc(fb.tip)}</div>`;
+    body += `</div>`;
+  }
+  return `<div class="feedback ${fb.status}"><button class="fb-head" data-toggle-fb="${i}"><span>${head[0]}</span><span>${head[1]}</span><span class="spacer"></span><span class="caret">${open ? "▲" : "▼"}</span></button>${body}</div>`;
+}
+
+function renderPractice() {
+  const s = state.scenario, l = langOf(state.lang) || LANGUAGES[0], lvl = LEVELS.find((x) => x[0] === state.level) || LEVELS[1];
+  const last = [...state.messages].reverse().find((m) => m.role === "partner");
+  const thread = state.messages.map((m, i) => m.role === "partner"
+    ? `<div class="row partner"><div class="bubble">${esc(m.text)}${(m.showTr || state.allTr) ? `<div class="translation">${esc(m.tr)}</div>` : ""}</div>
+       <div class="bubble-actions"><button class="mini-btn" data-say="${esc(m.text)}">🔊 Lyssna</button><button class="mini-btn" data-tr="${i}">${(m.showTr || state.allTr) ? "Dölj översättning" : "Översätt"}</button></div></div>`
+    : `<div class="row user"><div class="bubble">${esc(m.text)}</div>${m.fb ? feedbackHTML(m.fb, i) : ""}</div>`).join("");
+  app.innerHTML = `
+  <main class="practice">
+    <header class="topbar">
+      <button class="icon-btn" data-back aria-label="Tillbaka">←</button>
+      <div class="topbar-title"><strong>${s.emoji} ${s.title}</strong><span>${l[2]} ${l[1]} · ${lvl[0]} ${lvl[1]}</span></div>
+      <button class="icon-btn" data-slow aria-pressed="${state.slow}" aria-label="Långsamt tal" title="Långsamt tal">🐢</button>
+      <button class="icon-btn" data-alltr aria-pressed="${state.allTr}" aria-label="Visa översättningar" title="Visa översättningar">🇸🇪</button>
+    </header>
+    <div class="inset"><div class="goal">🎯 <span><strong>Mål:</strong> ${esc(s.goal)}</span></div>
+    <div class="demo-banner">Förhandsvisning – svaren är förskrivna exempel. Testa att skicka exempelmeningen som redan står i rutan.</div></div>
+    <div class="thread inset" id="thread">${thread}${state.loading ? `<div class="row partner"><div class="bubble typing" aria-label="Skriver"><i></i><i></i><i></i></div></div>` : ""}</div>
+    <div class="composer inset">
+      ${last && !state.loading ? `<div class="suggestions">${last.sugg.map((x) => `<button class="suggestion" data-fill="${esc(x[0])}">${esc(x[0])}<span>${esc(x[1])}</span></button>`).join("")}</div>` : ""}
+      <div class="input-row">
+        <button class="round-btn" data-mic aria-label="Prata">🎤</button>
+        <textarea id="input" rows="1" placeholder="Svara på ${l[1].toLowerCase()}…">${state.step === 0 && !state.loading ? esc(s.sample) : ""}</textarea>
+        <button class="round-btn send" data-send aria-label="Skicka">➤</button>
+      </div>
+    </div>
+  </main>`;
+  const th = document.getElementById("thread"); th.scrollTop = th.scrollHeight;
+}
+
+function render() { state.view === "home" ? renderHome() : renderPractice(); }
+
+function startScenario(id) {
+  state.scenario = SCENARIOS.find((s) => s.id === id); state.view = "practice"; state.messages = []; state.step = 0; state.loading = true;
+  render();
+  setTimeout(() => { const s = state.scenario; state.loading = false; state.messages.push({ role: "partner", text: s.open[0], tr: s.open[1], sugg: s.sugg.slice(0, 0).concat([[s.sample, "Exempelmening att testa"]]) }); render(); }, 700);
+}
+
+function send() {
+  const input = document.getElementById("input"); const text = input.value.trim();
+  if (!text || state.loading) return;
+  const s = state.scenario;
+  let fb;
+  if (state.step === 0 && text === s.sample) fb = { ...s.fb, open: s.fb.status !== "perfect" };
+  else if (state.step === 0) fb = { status: "minor", corrected: "", natural: "", errors: [], tip: "I förhandsvisningen rättas bara exempelmeningen. I den riktiga appen rättas och förklaras allt du skriver." };
+  else fb = { status: "minor", corrected: "", natural: "", errors: [], tip: "Här tar förhandsvisningen slut. I den riktiga appen fortsätter samtalet så länge du vill." };
+  state.messages.push({ role: "user", text, fb });
+  state.loading = true; render();
+  setTimeout(() => {
+    state.loading = false;
+    if (state.step === 0) state.messages.push({ role: "partner", text: s.reply[0], tr: s.reply[1], sugg: s.sugg });
+    state.step++; render();
+  }, 800);
+}
+
+app.addEventListener("click", (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  const d = b.dataset;
+  if (d.lang) { state.lang = d.lang; try { localStorage.setItem("lang", d.lang); } catch (x) {} render(); }
+  else if (d.level) { state.level = d.level; try { localStorage.setItem("level", d.level); } catch (x) {} render(); }
+  else if (d.scenario) startScenario(d.scenario);
+  else if ("back" in d) { state.view = "home"; try { speechSynthesis.cancel(); } catch (x) {} render(); }
+  else if ("slow" in d) { state.slow = !state.slow; render(); }
+  else if ("alltr" in d) { state.allTr = !state.allTr; render(); }
+  else if (d.tr !== undefined) { const m = state.messages[+d.tr]; m.showTr = !m.showTr; render(); }
+  else if (d.toggleFb !== undefined) { const m = state.messages[+d.toggleFb]; m.fb.open = m.fb.open === false; render(); }
+  else if (d.say) speak(d.say);
+  else if (d.fill) { const i = document.getElementById("input"); i.value = d.fill; i.focus(); }
+  else if ("mic" in d) toast("Mikrofonen fungerar i den riktiga appen");
+  else if ("send" in d) send();
+});
+app.addEventListener("keydown", (e) => { if (e.target.id === "input" && e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } });
+
+render();
+</script>
