@@ -1,18 +1,14 @@
 import Anthropic from "@anthropic-ai/sdk";
 import { betaZodOutputFormat } from "@anthropic-ai/sdk/helpers/beta/zod";
 import { NextResponse } from "next/server";
-import { buildSystemPrompt } from "@/lib/prompt";
+import { apiErrorMessage, FALLBACK_PARAMS, hasKey, MODEL } from "@/lib/claude";
 import { demoTurn } from "@/lib/demo";
-import { LEVELS, getLanguage, getScenario } from "@/lib/scenarios";
+import { buildSystemPrompt } from "@/lib/prompt";
+import { getLanguage, getScenario, LEVELS } from "@/lib/scenarios";
 import { TurnSchema, type ChatRequest } from "@/lib/schema";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
-
-// The in-app conversation partner uses a cheaper model. Override with ANTHROPIC_MODEL.
-const MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
-// Server-side refusal fallbacks are not available on Haiku models.
-const SUPPORTS_FALLBACK = !MODEL.includes("haiku");
 
 export async function POST(req: Request) {
   const body = (await req.json()) as ChatRequest;
@@ -25,7 +21,7 @@ export async function POST(req: Request) {
 
   const lastUser = [...body.history].reverse().find((m) => m.role === "user");
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!hasKey()) {
     await new Promise((r) => setTimeout(r, 600));
     return NextResponse.json({ turn: demoTurn(lastUser?.text ?? null), demo: true });
   }
@@ -41,33 +37,22 @@ export async function POST(req: Request) {
     const response = await client.beta.messages.parse({
       model: MODEL,
       max_tokens: 16000,
-      ...(SUPPORTS_FALLBACK
-        ? { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }
-        : {}),
+      ...FALLBACK_PARAMS,
       system: buildSystemPrompt(lang, level, scenario),
       messages,
       output_config: { effort: "low", format: betaZodOutputFormat(TurnSchema) },
     });
 
     if (response.stop_reason === "refusal") {
-      return NextResponse.json(
-        { error: "Modellen ville inte svara på det här. Försök formulera om dig." },
-        { status: 422 },
-      );
+      return NextResponse.json({ error: "Modellen ville inte svara på det här. Försök formulera om dig." }, { status: 422 });
     }
     if (!response.parsed_output) {
       return NextResponse.json({ error: "Kunde inte tolka svaret, försök igen." }, { status: 502 });
     }
     return NextResponse.json({ turn: response.parsed_output });
   } catch (error) {
-    if (error instanceof Anthropic.AuthenticationError) {
-      return NextResponse.json({ error: "Ogiltig API-nyckel." }, { status: 500 });
-    } else if (error instanceof Anthropic.RateLimitError) {
-      return NextResponse.json({ error: "För många förfrågningar, vänta en stund." }, { status: 429 });
-    } else if (error instanceof Anthropic.APIError) {
-      console.error("Anthropic API error", error.status, error.message);
-      return NextResponse.json({ error: `API-fel (${error.status}).` }, { status: 502 });
-    }
+    const e = apiErrorMessage(error);
+    if (e) return NextResponse.json({ error: e.message }, { status: e.status });
     throw error;
   }
 }

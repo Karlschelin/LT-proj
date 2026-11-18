@@ -18,6 +18,8 @@ export const TurnSchema = z.object({
         correction: z.string(),
         type: z.enum(["grammatik", "ordval", "stavning", "ordföljd", "artighet", "uttryck"]),
         explanation: z.string(),
+        /** Dictionary form of the word/phrase worth saving as a flashcard from this error. Empty strings if none. */
+        word: z.object({ word: z.string(), translation: z.string(), tag: z.string() }),
       }),
     ),
     /** Short encouraging note or tip in Swedish. */
@@ -38,4 +40,31 @@ export type ChatRequest = {
   level: string;
   scenario: string;
   history: { role: "user" | "partner"; text: string }[];
+};
+
+export const WORD_TAGS = ["mask.", "fem.", "neutr.", "verb", "adj.", "adv.", "fras", "annat"] as const;
+
+export const VocabSchema = z.object({
+  words: z.array(
+    z.object({
+      /** Target-language word with article where the language uses one, e.g. "la cuenta". */
+      word: z.string(),
+      /** Swedish translation. */
+      translation: z.string(),
+      tag: z.enum(WORD_TAGS),
+      /** Short, natural example sentence in the target language using the word. */
+      example: z.string(),
+      example_translation: z.string(),
+    }),
+  ),
+});
+export type Vocab = z.infer<typeof VocabSchema>;
+
+export type VocabRequest = {
+  language: string;
+  level: string;
+  area: string;
+  count: number;
+  /** Words the learner already has in this language, to avoid duplicates. */
+  existing: string[];
 };

@@ -13,12 +13,12 @@ Flikrad längst ned:
 
 Språk och nivå väljs en gång (i sidhuvudet) och gäller i hela appen.
 
-## Fas 1 – Ny design + grundstruktur
+## Fas 1 – Ny design + grundstruktur ✅
 - Ny visuell identitet (se förhandsvisningen), flikrad, delad språk/nivå-väljare
 - Lagring på enheten (IndexedDB) för glosor, framsteg och samtal, så att allt finns kvar dag till dag
 - Samtalsdelen flyttas in i nya designen oförändrad i funktion
 
-## Fas 2 – Glosor (MVP)
+## Fas 2 – Glosor (MVP) ✅
 **Skapa glosbank:** språk, nivå (A1–C1), område (t.ex. Mat & restaurang, Resor, Jobb & kontor,
 Vård, Hem & vardag, Shopping, Natur & väder, Känslor, IT, Fritid – eller eget område i fritext),
 antal glosor (20/40/60/100) och nya per dag (5/10/15/20).
@@ -38,7 +38,7 @@ lite större, med ett tak så att det aldrig blir överväldigande.
 4. Lyssna: hör ordet och skriv det (kommer med röst i fas 4)
 
 ## Fas 3 – Koppla ihop delarna
-- "Spara som glosa" på varje rättelse i samtalen → hamnar i banken "Från samtal"
+- "Spara som glosa" på varje rättelse i samtalen → hamnar i banken "Från samtal" ✅
 - Samtal kan väljas "med mina glosor": AI:n använder ord du övar på, och de markeras i chatten
 - Idag-fliken föreslår ett samtal som passar glosorna du just övat
 

@@ -21,10 +21,25 @@ If the learner's message is "(start)", it means the scene is starting: open it n
 - "errors": real grammar, vocabulary or word-order mistakes.
 For each error: quote the exact wrong part in \`original\`, give the fix in \`correction\`, and explain in Swedish in one or two sentences *why*, comparing with Swedish when that helps (e.g. "På svenska säger vi … men på spanska …"). Don't nitpick missing accents/punctuation if the learner seems to be typing on a phone; mention them at most once as "minor".
 If the learner writes in Swedish or another language, set status "errors", put the correct target-language sentence in \`corrected\`, and explain how to say it.
+For each error, \`word\` is the single most useful vocabulary item to learn from it, in dictionary form with its article where the language uses one (e.g. "la mesa", "desde hace"), its Swedish translation, and a tag (one of: mask., fem., neutr., verb, adj., adv., fras, annat). Use empty strings if the error is only about spelling or punctuation.
 \`natural_alternative\` is how a native would most likely phrase the same thing, only if it differs meaningfully from \`corrected\`.
 
 ## Suggestions
 Give three short, different things the learner could plausibly say next, at their level, with Swedish meaning.
 
 \`reply_translation\` is a natural Swedish translation of your reply.`;
+}
+
+export function buildVocabPrompt(langName: string, langCode: string, level: string, area: string, count: number, existing: string[]) {
+  return `Create a vocabulary list for a Swedish speaker learning ${langName} (${langCode}) at CEFR level ${level}.
+
+Topic: ${area}
+Number of words: exactly ${count}
+
+Pick the words a learner at ${level} would actually need for this topic, most useful and frequent first, mixing nouns, verbs, adjectives and a few short fixed phrases. Use the standard variety for ${langCode}.
+- \`word\`: dictionary form. Nouns with their definite article where the language has one (e.g. "la cuenta", "le serveur", "der Kellner"); verbs in the infinitive. For Japanese, write the word in kana/kanji followed by romaji in parentheses.
+- \`translation\`: natural Swedish equivalent (for nouns in definite form when the word has a definite article, e.g. "notan").
+- \`tag\`: grammatical gender for nouns (mask./fem./neutr.), otherwise the word class; "fras" for phrases.
+- \`example\`: one short, natural sentence a native would say, using the word, at ${level} difficulty. \`example_translation\` in Swedish.
+${existing.length ? `\nThe learner already has these words, do not repeat them:\n${existing.join(", ")}` : ""}`;
 }

@@ -4,13 +4,17 @@
 Samtalspartnern pratar naturligt och stannar i sin roll, och efter varje svar får du rättelser
 och förklaringar på svenska.
 
-## Steg 1 (klart)
-- Välj språk, nivå (A1–C1) och situation
-- Chatt där partnern pratar som en riktig person
-- Rättelser på svenska: korrekt mening, varje fel med förklaring, "mer naturligt"-alternativ, tips
-- Förslag på vad du kan säga härnäst
-- Översättning per meddelande, uppläsning (webbläsarens röst), långsamt tal, mikrofon (där webbläsaren stöder det)
-- Demoläge utan API-nyckel
+## Funktioner
+- **Idag:** dagens pass (repetitioner + nya glosor), dagar i rad, genvägar till samtal
+- **Prata:** 8 situationer, partnern pratar naturligt och stannar i rollen; rättelser och
+  förklaringar på svenska, mer naturliga alternativ, svarsförslag, översättning, uppläsning.
+  Fel kan sparas som glosor ("Från samtal").
+- **Glosor:** AI:n skapar glosbanker per språk, nivå och område (eller eget område), 20–100 ord,
+  5–20 nya per dag. Repetition med FSRS (spaced repetition). Övningstyper: kort med
+  självbedömning, flerval och skriv (förlåtande för accenter, men påpekar dem).
+- **Framsteg:** glosor du kan/övar på, dagar i rad, träffsäkerhet, vanligaste feltyper.
+- Allt sparas i mobilen (IndexedDB). Lägg appen på hemskärmen så att iPhone inte rensar datan.
+- Demoläge utan API-nyckel.
 
 ## Kör på Vercel (från mobilen)
 1. Logga in på vercel.com med GitHub → "Add New Project" → välj detta repo.
